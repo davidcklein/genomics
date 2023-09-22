@@ -2,7 +2,7 @@
 #
 #SBATCH -N 1
 #SBATCH --job-name=ATACseq
-#SBATCH --output=pepatac_out.txt
+#SBATCH --output=pepatac_out_%A.txt
 #SBATCH --time=00-23:59
 #SBATCH --cpus-per-task=24
 #SBATCH --mem=100g
