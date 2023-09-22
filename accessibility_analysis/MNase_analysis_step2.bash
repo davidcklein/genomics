@@ -10,7 +10,7 @@
 #############################
 
 ##Danpos2 is ANCIENT -- note that loading current modules (e.g. r/4.X.X or samtools/1.X) will break the software
-#Danpos does not support multithreading in any way that I can tell, so it's not worth running this section with a lot of cores
+#Danpos does not support multithreading in any way that I can tell, so it's not worth running this section with a lot of cores (hence the separate scripts for step 1 and step 2)
 #Before running, change the sample names within the scripts to match the samples in your directory. I recommend keeping the same file name for all files, with the size class included at the end.
 
 #set variable for danpos2 ($danpos2)
