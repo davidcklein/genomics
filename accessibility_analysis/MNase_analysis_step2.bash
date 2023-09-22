@@ -32,11 +32,8 @@ mkdir -p Danpos_230-270
 # --extend will expand the sequencing reads to a length specified, similar to -e in deeptools
 
 python $danpos2/danpos.py dpos SAMPLE_1_1-80.bam,SAMPLE_2_1-80.bam -m 1 -o Danpos_1-80 -f 1 -s 1 -m 1 --mifrsz 0 --mafrsz 100 --extend 80
-
 python $danpos2/danpos.py dpos SAMPLE_1_100-130.bam,SAMPLE_2_100-130.bam -m 1 -o Danpos_100-130 -f 1 -s 1 -m 1 --mifrsz 100 --mafrsz 200 --extend 80
-
 python $danpos2/danpos.py dpos SAMPLE_1_135-165.bam,SAMPLE_2_135-165.bam-m 1 -o Danpos_135-165 -f 1 -s 1 -m 1 --mifrsz 100 --mafrsz 200 --extend 80
-
 python $danpos2/danpos.py dpos SAMPLE_1_230-270.bam,SAMPLE_2_230-270.bam -m 1 -o Danpos_230-270 -f 1 -s 1 -m 1 --mifrsz 200 --mafrsz 300 --extend 80
 
 mkdir -p Danpos_1-80/wiq/
