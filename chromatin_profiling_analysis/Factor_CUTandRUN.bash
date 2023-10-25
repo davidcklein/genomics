@@ -33,6 +33,7 @@ cd ./raw/
 for f in *.fastq; do fastqc -t 8 -q --extract $f; done
 mv *.html ../QC
 mv *.zip ../QC
+mv ./*fastqc/ ../QC/
 #FastQC will generate sequencing read quality control metrics
 
 for f in *.fastq; do awk '{if(NR%4==1){print $1} else{print substr($1, 1, 25)}}' $f > ${f/.fastq/_trim25.fastq}; done
