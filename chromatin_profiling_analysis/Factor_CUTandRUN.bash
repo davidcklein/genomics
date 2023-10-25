@@ -23,6 +23,12 @@ mm10.header=/ix1/shainer/Dave/Master_Reference_Files/mm10/bowtie2.mm10.header
 
 ## Fastq file processing, read trimming, and sequencing QC
 
+mkdir -p ./raw/
+mkdir -p ./bam/
+mkdir -p ./bg/
+mkdir -p ./bw/
+mkdir -p ./QC/
+
 module load fastqc pigz
 
 pigz -d -p 8 -- ./raw/*.gz
