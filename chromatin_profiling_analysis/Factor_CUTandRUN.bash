@@ -36,21 +36,25 @@ pigz -d -p 8 -- ./raw/*.gz
 
 cd ./raw/
 
-for f in *.fastq; do fastqc -t 8 -q --extract $f; done
+for f in *.fastq; do if [[ ! -e "${f/.fastq/_fastqc" ]]; then fastqc -t 8 -q --extract $f; fi; done
 mv *.html ../QC
 mv *.zip ../QC
 mv ./*fastqc/ ../QC/
 #FastQC will generate sequencing read quality control metrics
+#The if loop here will ensure that the program doesn't waste computing time re-running commands. 
+#These will be sprinkled throughout; if the target file does not exist, then run the command. 
 
-for f in *.fastq; do awk '{if(NR%4==1){print $1} else{print substr($1, 1, 25)}}' $f > ${f/.fastq/_trim25.fastq}; done
-#This awk command will trim reads to 25 bp lengths -- because base calls are less accurate at the ends of sequencing reads, this step can improve paired-end alignment without sacrificing read information
+for f in *.fastq; do if [[ ! -e "${f/.fastq/_trim25.fastq}" ]]; then awk '{if(NR%4==1){print $1} else{print substr($1, 1, 25)}}' $f > ${f/.fastq/_trim25.fastq}; fi; done
+#This awk command will trim reads to 25 bp lengths -- because base calls are less accurate at the ends of sequencing reads, 
+#this step can improve paired-end alignment without sacrificing read information
+#
 
 ## Alignment
 
 module purge
 module load gcc/8.2.0 bowtie2/2.4.5 pigz
 
-for f in *R1_trim25.fastq; do bowtie2 -q -N 1 -p 8 -X 1000 -I 50 -x $hg38 -1 $f -2 ${f/R1/R2} -S ${f/_R1_trim25.fastq/.sam}; pigz -p 8 -- $f ${f/R1/R2}; done 
+for f in *R1_trim25.fastq; do echo $f; if [[ ! -e "${f/_R1_trim25.fastq/.sam}" ]]; then bowtie2 -q -N 1 -p 8 -X 1000 -I 50 --no-unal -x $hg38 -1 $f -2 ${f/R1/R2} -S ${f/_R1_trim25.fastq/.sam}; fi; done 
 #Bowtie2 will align fragments between 50 and 1000 bp, leaving unaligned reads out of the output sam files
 
 mv *.sam ../bam/
@@ -61,12 +65,12 @@ cd ../bam/
 module purge
 module load gcc/8.2.0 samtools/1.14 picard
 
-for f in *.sam; do java -Xmx64g -jar /ix1/shainer/picard-tools-2.5.0/picard.jar SortSam INPUT=$f OUTPUT=${f/.sam/_sorted.bam} VALIDATION_STRINGENCY=LENIENT TMP_DIR=/tmp SORT_ORDER=coordinate; java -Xmx64g -jar /ix1/shainer/picard-tools-2.5.0/picard.jar MarkDuplicates INPUT=${f/.sam/_sorted.bam} OUTPUT=${f/.sam/_dup_marked.bam} VALIDATION_STRINGENCY=LENIENT TMP_DIR=/tmp METRICS_FILE=dup.txt REMOVE_DUPLICATES=true; done
+for f in *.sam; do if [[ ! -e "${f/.sam/_dup_marked.bam}" ]]; then java -Xmx64g -jar /ix1/shainer/picard-tools-2.5.0/picard.jar SortSam INPUT=$f OUTPUT=${f/.sam/_sorted.bam} VALIDATION_STRINGENCY=LENIENT TMP_DIR=/tmp SORT_ORDER=coordinate; java -Xmx64g -jar /ix1/shainer/picard-tools-2.5.0/picard.jar MarkDuplicates INPUT=${f/.sam/_sorted.bam} OUTPUT=${f/.sam/_dup_marked.bam} VALIDATION_STRINGENCY=LENIENT TMP_DIR=/tmp METRICS_FILE=dup.txt REMOVE_DUPLICATES=true; fi; done
 #Picard is a Java-based optical duplicate checker that will mark and remove artifactual duplicate reads (e.g. PCR-induced duplicates). Ensure that the value in -Xmx##g is approximately but not more than 80% of the requested memory (in this case, 64g out of 80g) to prevent crashing
 
 rm *_sorted.bam
 
-for f in *_dup_marked.bam; do samtools view -@ 7 -h -Sq 10 -o ${f/_dup_marked.bam/_filtered.sam} $f; done
+for f in *_dup_marked.bam; do if [[ ! -e "${f/_dup_marked.bam/_filtered.sam}" ]]; then samtools view -@ 7 -h -Sq 10 -o ${f/_dup_marked.bam/_filtered.sam} $f; fi; done
 #This step will convert the BAM file output from Picard to a SAM file and filter out any reads with a MAPQ score < 10
 
 rm *_dup_marked.bam
@@ -74,17 +78,16 @@ rm *_dup_marked.bam
 ## Size selection
 #To prevent contamination of reads resulting from untargeted cleavage by MNase, factor reads are limited to those between 1-120 bp
 
-for f in *_filtered.sam; do awk ' $9 <= 120 && $9 >= 1 || $9 >= -120 && $9 <= -1 ' $f > ${f/_filtered.sam/.1_120.sam}; cp $header ${f/_filtered.sam/.1_120.header}; cat ${f/_filtered.sam/.1_120.sam} >> ${f/_filtered.sam/.1_120.header}; rm ${f/_filtered.sam/.1_120.sam}; mv ${f/_filtered.sam/.1_120.header} ${f/_filtered.sam/.1_120.sam}; samtools view -@ 7 -S -t $hg38.cs -b -o ${f/_filtered.sam/.1_120.bam} ${${f/_filtered.sam/.1_120.sam}; rm ${${f/_filtered.sam/.1_120.sam}; done
+for f in *_filtered.sam; do if [[ ! -e "${f/_filtered.sam/.1_120.sam}" ]]; then awk ' $9 <= 120 && $9 >= 1 || $9 >= -120 && $9 <= -1 ' $f > ${f/_filtered.sam/.1_120.sam}; cp $header ${f/_filtered.sam/.1_120.header}; cat ${f/_filtered.sam/.1_120.sam} >> ${f/_filtered.sam/.1_120.header}; rm ${f/_filtered.sam/.1_120.sam}; mv ${f/_filtered.sam/.1_120.header} ${f/_filtered.sam/.1_120.sam}; samtools view -@ 7 -S -t $hg38.cs -b -o ${f/_filtered.sam/.1_120.bam} ${f/_filtered.sam/.1_120.sam}; fi ; done
 
-for f in *1_120.bam; do samtools sort -@ 7 -O BAM -o ${f/.bam/_sorted.bam} $f; samtools index -@ 7 ${f/.bam/_sorted.bam}; done
+for f in *1_120.bam; do if [[ ! -e "${f/.bam/_sorted.bam.bai}" ]]; then samtools sort -@ 7 -O BAM -o ${f/.bam/_sorted.bam} $f; samtools index -@ 7 ${f/.bam/_sorted.bam}; fi; done
 #This step will sort reads by coordinate/position and index the sorted bam file as prep for deeptools input
-
 
 ## Generation of read-normalized (to 1X coverage) signal tracks
 
 module purge
 module load deeptools
 
-for f in *sorted.bam; do bamCoverage -b $f -of bigwig -bs 5 --smoothLength 20 -p 8 --normalizeUsing RPGC --effectiveGenomeSize 2701495761 -e -o ${f/_sorted.bam/.bw}; done
+for f in *sorted.bam; do if [[ ! -e "${f/_sorted.bam/.bw}" ]]; then bamCoverage -b $f -of bigwig -bs 5 --smoothLength 20 -p 8 --normalizeUsing RPGC --effectiveGenomeSize 2701495761 -e -o ${f/_sorted.bam/.bw}; fi; done
 #This step will generate a genome coverage bigWig file of all regions covered by this experiment, normalized to 1X coverage and binned in 5-bp segments. I prefer 5-bp bins as a compromise of speed and resolution (particularly given ChIP chromatin shearing limitations), but -bs can be altered down to 1 for high-resolution or up for faster analysis. If -bs is changed, --smoothLength should also be changed to maintain a 1:4 ratio. The --effectiveGenomeSize parameter is customized to 50 bp read length for hg38; if you do not trim reads to 25 bp or are not working with the hg38 assembly, this parameter will need to be adjusted accordingly. 
 #-e will extend paired-end reads to fill gaps between the R1 and R2 bases, assuming that correctly paired reads span the entire region. Do not enable this option for single-end experiments. 
