@@ -37,8 +37,8 @@ library("EnhancedVolcano")
 #For a nice volcano plot:
   #adjust the xlim values to include the highest and lowest LFC values
   #adjust the ylim values to include the lowest adj. p value
-  #To call out specific genes, add the following line:
-#    selectLab = c('gene1','gene2'),
+  #To highlight specific genes, add the following line:
+#               selectLab = c('gene1','gene2'),
 EnhancedVolcano(resOrdered,
                 lab = (row.names(resOrdered)),
                 x = 'log2FoldChange',
@@ -73,7 +73,10 @@ assay(rld) <- limma::removeBatchEffect(assay(rld), rld$batch)
 plotPCA(rld,intgroup=c("KO"))
 PCA<-plotPCA(rld,intgroup=c("KO"))
 df.name<-(c("BAF180_Cu","BAF180_Cu","BAF180_NT","BAF180_NT",
-            "BAF180_Zn","BAF180_Zn","BAF250_Cu","BAF250_Cu","BAF250_NT","BAF250_NT", "BAF250_Zn","BAF250_Zn","BRD9_Cu","BRD9_Cu","BRD9_NT","BRD9_NT", "BRD9_Zn","BRD9_Zn","SCR_Cu","SCR_Cu","SCR_NT","SCR_NT", "SCR_Zn","SCR_Zn","WT_Cu","WT_Cu","WT_NT","WT_NT", "WT_Zn","WT_Zn"))
+            "BAF180_Zn","BAF180_Zn","BAF250_Cu","BAF250_Cu","BAF250_NT",
+            "BAF250_NT", "BAF250_Zn","BAF250_Zn","BRD9_Cu","BRD9_Cu","BRD9_NT",
+            "BRD9_NT", "BRD9_Zn","BRD9_Zn","SCR_Cu","SCR_Cu","SCR_NT","SCR_NT",
+            "SCR_Zn","SCR_Zn","WT_Cu","WT_Cu","WT_NT","WT_NT", "WT_Zn","WT_Zn"))
 PCA+geom_text_repel(aes(label=df.name),
                     fontface=c("bold"),size=0,force=10,
                     min.segment.length=5)+
