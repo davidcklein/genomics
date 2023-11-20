@@ -9,4 +9,5 @@ Over the course of the analysis, new subdirectories will be created within $pare
 Because peak-calling and plotting can require much more specifically targeted analyses, I am not including these specific commands in the analysis scripts included in this repository. As it is, these scripts will run through the basic, repeatable analyses that are generalizable to most similar experiments. 
 
 # Other information
-The scripts are intended to be run in a SLURM environment, but are adaptable to other workload managers/cloud computing environments with adjustments to the header. 
+The bash scripts are intended to be run in a SLURM environment, but are adaptable to other workload managers/cloud computing environments with adjustments to the header. 
+R scripts are amenable to running in whatever R environment is preferred. It is assumed that all packages that are required for analysis are installed. Typically, these packages can be installed via CRAN or BioConductor repositories. 
