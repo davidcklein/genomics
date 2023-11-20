@@ -15,7 +15,7 @@ pepATAC=/ix1/shainer/Dave/Master_Reference_Files/pepatac
 
 ##These variables are specific to your individual analysis; fill them in as you like
 #The fq directory containing your ATAC-seq fastq files to analyze
-fq=/ix1/shainer/
+fq=/ix1/shainer/[YOUR WORKING DIRECTORY HERE]
 
 #Your input fastq files
 
