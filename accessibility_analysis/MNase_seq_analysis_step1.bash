@@ -10,7 +10,7 @@
 #############################
 
 #Trim reads to 25 bp (helps mapping; only do this with paired-end data)
-for f in *.fastq; do awk '{if(NR%4==1){print $1} else{print substr($1, 1, 25)}}' $f > ${f/.fastq/_trim25.fastq}; done
+for f in *.fastq; do if [[ ! -e "${f/.fastq/_trim25.fastq}" ]]; then awk '{if(NR%4==1){print $1} else{print substr($1, 1, 25)}}' $f > ${f/.fastq/_trim25.fastq}; fi; done
 
 #Align
 #pigz (parallel gzip) will gzip input files after mapping has completed. I do this to run commands on scavenger without overwriting files if the script gets restarted, but it isn't strictly necessary
@@ -27,7 +27,7 @@ for f in *.bam; do java -Xmx48g -jar /ix1/shainer/picard-tools-2.5.0/picard.jar 
 
 for f in *_rmdup.bam; do samtools view -@ 23 -hSq 10 $f > ${f/_rmdup.bam/_filtered.sam}; done
 
-#Size selection: 230-270 bp (OLDN), 135-165 bp (nucleosome) 100-130 bp (subnucleosome) 1-80 bp (factors)
+#Size selection: 230-270 bp (overlapping dinucleosome), 135-165 bp (mononucleosome) 100-130 bp (subnucleosome) 1-80 bp (transcription factors)
 
 cp /ix1/shainer/Dave/Master_Reference_Files/mm10/bowtie2_mm10.header ./
 
