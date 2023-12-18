@@ -16,7 +16,7 @@ mm10=/ix1/shainer/Dave/Master_Reference_Files/programs/STAR/mm10/mm10_gencode
 for f in *R1.fastq; do STAR --runThreadN 4 --genomeDir $hg38 --readFilesIn $f ${f/R1/R2} --outSAMtype BAM SortedByCoordinate --outFilterMismatchNoverReadLmax 0.02 --outFilterMultimapNmax 1 --outFileNamePrefix ${f/_R1.fastq/}; done
 #Align read fragments using a splice-aware aligner (I prefer STAR, but Hisat2 is another good option. I would avoid TopHat altogether at this point). 
 
-for f in *.bam; do mv $f ${f/Aligned.SortedByCoord/}; done
+for f in *.bam; do mv $f ${f/Aligned.sortedByCoord.out/}; done
 
 module purge
 module load gcc/8.2.0 samtools/1.14
