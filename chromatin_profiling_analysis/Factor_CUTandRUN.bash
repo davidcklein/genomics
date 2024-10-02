@@ -77,6 +77,8 @@ rm *_dup_marked.bam
 
 ## Size selection
 #To prevent contamination of reads resulting from untargeted cleavage by MNase, factor reads are limited to those between 1-120 bp
+#This parameter should be altered based on the size of the factor footprint, if information is known
+#E.g., I prefer to use a footprint of 1-200 bp for the BAF complex in many cases
 
 for f in *_filtered.sam; do if [[ ! -e "${f/_filtered.sam/.1_120.sam}" ]]; then awk ' $9 <= 120 && $9 >= 1 || $9 >= -120 && $9 <= -1 ' $f > ${f/_filtered.sam/.1_120.sam}; \
 cp $header ${f/_filtered.sam/.1_120.header}; cat ${f/_filtered.sam/.1_120.sam} >> ${f/_filtered.sam/.1_120.header}; rm ${f/_filtered.sam/.1_120.sam}; \
