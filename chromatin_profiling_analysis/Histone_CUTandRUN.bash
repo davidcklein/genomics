@@ -78,6 +78,8 @@ rm *_dup_marked.bam
 
 ## Size selection
 #To prevent contamination of reads resulting from untargeted cleavage by MNase, histone reads are limited to those between 150-500 bp (mono/di/trinucleosome fragments)
+#This parameter should be altered based on the size of the factor footprint, if information is known
+#E.g., I prefer to use a footprint of 1-200 bp for the BAF complex in many cases
 
 for f in *_filtered.sam; do if [[ ! -e "${f/_filtered.sam/.1_120.sam}" ]]; then awk ' $9 <= 500 && $9 >= 150 || $9 >= -500 && $9 <= -150 ' $f > ${f/_filtered.sam/.150_500.sam}; cp $header ${f/_filtered.sam/.150_500.header}; \
 cat ${f/_filtered.sam/.150_500.sam} >> ${f/_filtered.sam/.150_500.header}; rm ${f/_filtered.sam/.150_500.sam}; mv ${f/_filtered.sam/.150_500.header} ${f/_filtered.sam/.150_500.sam}; \
