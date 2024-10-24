@@ -36,7 +36,7 @@ pigz -d -p 8 -- ./raw/*.gz
 
 cd ./raw/
 
-for f in *.fastq; do if [[ ! -e "${f/.fastq/_fastqc" ]]; then fastqc -t 8 -q --extract $f; fi; done
+for f in *.fastq; do if [[ ! -e "${f/.fastq/_fastqc}" ]]; then fastqc -t 8 -q --extract $f; fi; done
 mv *.html ../QC
 mv *.zip ../QC
 mv ./*fastqc/ ../QC/
