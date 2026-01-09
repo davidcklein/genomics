@@ -4,16 +4,16 @@
 #SBATCH -t 00-09:59
 #SBATCH -c 4
 #SBATCH --mem 100G
-#SBATCH -o RNAseq_pipeline.out.txt
-#SBATCH -p scavenger
+#SBATCH -o RNAseq_pipeline_%A.out.txt
 ##################################
 
 module load gcc star/2.7.0e samtools
 
 hg38=/ix1/shainer/Dave/Master_Reference_Files/programs/STAR/hg38/
 mm10=/ix1/shainer/Dave/Master_Reference_Files/programs/STAR/mm10/mm10_gencode
+T2T=/ix1/shainer/Dave/Master_Reference_Files/programs/STAR/T2T
 
-for f in *R1.fastq; do STAR --runThreadN 4 --genomeDir $T2T --readFilesIn $f ${f/R1/R2} --outSAMtype BAM SortedByCoordinate --outFilterMismatchNoverReadLmax 0.02 --outFilterMultimapNmax 1 --outFileNamePrefix ${f/_R1.fastq/}; done
+for f in *R1.fastq; do STAR --runThreadN 4 --genomeDir $T2T --readFilesIn $f ${f/R1/R2} --outSAMtype BAM SortedByCoordinate --outFilterMismatchNoverReadLmax 0.02 --outFilterMultimapNmax 1 --outFileNamePrefix ${f/_R1.fastq/_}; done
 #Align read fragments using a splice-aware aligner (I prefer STAR, but Hisat2 is another good option. I would avoid TopHat altogether at this point). 
 
 for f in *.bam; do mv $f ${f/Aligned.sortedByCoord.out/}; done
@@ -27,10 +27,9 @@ for f in *.bam; do samtools view -@ 3 -h -O BAM -q 7 -o ${f/.bam/_qf.bam} $f; sa
 module purge
 module load subread
 
-featureCounts -t transcript -s 2 -p -B -T 4 -a /ix1/shainer/Dave/Master_Reference_Files/hg38/gtf/hg38.gencode.v38.gtf -o Gencode_hg38_transcript_counts.txt *_sorted.bam
-featureCounts -t gene -s 2 -p -B -T 4 -a /ix1/shainer/Dave/Master_Reference_Files/hg38/gtf/hg38.gencode.v38.gtf -g gene_name -o Gencode_hg38_gene_counts.txt *_sorted.bam
+featureCounts -t gene -s 2 -p --countReadPairs -B -T 6 -a /ix1/shainer/human/chm13v2.0/GCF_009914755.1_T2T-CHM13v2.0_genomic.gtf -g gene_id -o NCBI_Refseq_T2T_gene_counts.txt *_sorted.bam
 
-#These commands will use subread to assign reads to genomic features (annotated transcripts and genes, respectively) for hg38. For most traditional RNAseq analyses, the gene counts file is appropriate. 
+#This command will use subread to assign reads to genes for T2T.
 
 module purge
 module load deeptools
