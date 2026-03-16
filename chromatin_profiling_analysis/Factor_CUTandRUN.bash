@@ -52,7 +52,7 @@ for f in *.fastq.gz; do if [[ ! -e "${f/.fastq.gz/_trim25.fastq.gz}" ]]; then zc
 ## Alignment
 
 module purge
-module load gcc bowtie2/2.4.5
+module load gcc samtools bowtie2/2.4.5
 
 for f in *R1_trim25.fastq.gz; do echo $f; if [[ ! -e "${f/_R1_trim25.fastq.gz/.sam}" ]]; then bowtie2 -q -N 1 -p 8 -X 1000 -I 1 --very-sensitive --no-mixed --no-discordant --dovetail --no-unal -x $hg38 -1 $f -2 ${f/R1/R2} -S ${f/_R1_trim25.fastq.gz/.sam}; fi; done 
 #Bowtie2 will align fragments between 1 and 1000 bp, leaving unaligned reads out of the output sam files
