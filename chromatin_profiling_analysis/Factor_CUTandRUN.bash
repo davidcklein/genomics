@@ -45,7 +45,8 @@ mv ./*fastqc/ ../QC/
 #The if loop here will ensure that the program doesn't waste computing time re-running commands. 
 #These will be sprinkled throughout; if the target file does not exist, then run the command. 
 
-for f in *.fastq.gz; do if [[ ! -e "${f/.fastq.gz/_trim25.fastq.gz}" ]]; then zcat $f | awk '{if(NR%4==1){print $1} else if(NR%4==2 || NR%4==0){print substr($1, 1, 25)} else{print $1}}' | gzip > ${f/.fastq.gz/_trim25.fastq.gz}; fi; done
+for f in *R1.fastq.gz; do if [[ ! -e "${f/R1.fastq.gz/R1_trim25.fastq.gz}" ]]; then zcat $f | awk '{if(NR%4==1){print $1} else if(NR%4==2 || NR%4==0){print substr($1, 1, 25)} else{print $1}}' | gzip > ${f/R1.fastq.gz/R1_trim25.fastq.gz}; fi; done
+for f in *R2.fastq.gz; do if [[ ! -e "${f/R2.fastq.gz/R2_trim25.fastq.gz}" ]]; then zcat $f | awk '{if(NR%4==1){print $1} else if(NR%4==2 || NR%4==0){print substr($1, 1, 25)} else{print $1}}' | gzip > ${f/R2.fastq.gz/R2_trim25.fastq.gz}; fi; done
 #This awk command will trim reads to 25 bp lengths -- because base calls are less accurate at the ends of sequencing reads, 
 #this step can improve paired-end alignment without sacrificing read information
 
