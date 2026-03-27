@@ -64,8 +64,6 @@ cd ../bam/
 for f in *_bt2.sam; do if [[ ! -e "${f/_bt2.sam/_filtered.sam}" ]]; then samtools view -@ 7 -h -Sq 10 -o ${f/_bt2.sam/_filtered.sam} $f; fi; done
 #This step will filter out any reads with a MAPQ score < 10
 
-rm *_bt2.sam
-
 ## Filtering for optical duplicate reads using Picard
 
 module purge
@@ -76,8 +74,6 @@ java -Xmx24g -jar /ix1/shainer/picard-tools-2.5.0/picard.jar MarkDuplicates INPU
 
 #Picard is a Java-based optical duplicate checker that will mark and remove artifactual duplicate reads (e.g. PCR-induced duplicates). Ensure that the value in -Xmx##g is approximately but not more than 80% of the requested memory (in this case, 24g out of 32g) to prevent crashing
 
-rm *_filtered.sam
-
 ## Size selection
 #To prevent contamination of reads resulting from untargeted cleavage by MNase, histone reads are limited to those between 150-500 bp (mono/di/trinucleosome fragments)
 #This parameter should be altered based on the size of the factor footprint, if information is known
@@ -87,8 +83,6 @@ for f in *_dup_marked.sam; do if [[ ! -e "${f/_dup_marked.sam/.150_500.sam}" ]];
 cp $hg38_header ${f/_dup_marked.sam/.150_500.header}; cat ${f/_dup_marked.sam/.150_500.sam} >> ${f/_dup_marked.sam/.150_500.header}; rm ${f/_dup_marked.sam/.150_500.sam}; \
 mv ${f/_dup_marked.sam/.150_500.header} ${f/_dup_marked.sam/.150_500.sam}; samtools view -@ 7 -S -t $hg38_cs -b -o ${f/_dup_marked.sam/.150_500.bam} ${f/_dup_marked.sam/.150_500.sam}; fi; done
 
-rm *_dup_marked.sam
-
 for f in *150_500.bam; do if [[ ! -e "${f/.bam/_sorted.bam.bai}" ]]; then samtools sort -@ 7 -O BAM -o ${f/.bam/_sorted.bam} $f; samtools index -@ 7 ${f/.bam/_sorted.bam}; fi; done
 #This step will sort reads by coordinate/position and index the sorted bam file as prep for deeptools input
 
@@ -97,7 +91,7 @@ for f in *150_500.bam; do if [[ ! -e "${f/.bam/_sorted.bam.bai}" ]]; then samtoo
 module purge
 module load deeptools
 
-for f in *sorted.bam; do if [[ ! -e "${f/_sorted.bam/.bw}" ]]; then bamCoverage -b $f -of bigwig -bs 5 --smoothLength 20 -p 8 --normalizeUsing RPGC --effectiveGenomeSize 2701495761 -e -o ${f/_sorted.bam/.bw}; fi; done
+for f in *sorted.bam; do if [[ ! -e "${f/_sorted.bam/.bw}" ]]; then bamCoverage --exactScaling --centerReads -b $f -of bigwig -bs 5 --smoothLength 20 -p 8 --normalizeUsing RPGC --effectiveGenomeSize 2701495761 -e -o ${f/_sorted.bam/.bw}; fi; done
 
 #This step will generate a genome coverage bigWig file of all regions covered by this experiment, normalized to 1X coverage and binned in 5-bp segments. I prefer 5-bp bins as a compromise of speed and resolution 
 # (particularly given ChIP chromatin shearing limitations), but -bs can be altered down to 1 for high-resolution or up for faster analysis. If -bs is changed, --smoothLength should also be changed to maintain a 1:4 ratio. 
