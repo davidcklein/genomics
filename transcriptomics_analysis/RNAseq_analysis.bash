@@ -20,7 +20,6 @@ for f in *Aligned.sortedByCoord.out.bam; do mv $f ${f/Aligned.sortedByCoord.out/
 for f in *.bam; do if [[ ! -e "${f/.bam/_qf.bam}" ]]; then samtools view -@ 3 -h -O BAM -q 7 -o ${f/.bam/_qf.bam} $f; samtools index -@ 3 ${f/.bam/_qf.bam}; fi; done
 #This command will filter out reads with a MAPQ alignment quality score of < 7 and index the resulting bam files
 
-rm *.bam *.bai
 for f in *_qf.bam; do mv $f ${f/_qf/}; done
 for f in *.bam; do samtools index -@ 3 $f; done
 
